@@ -1145,7 +1145,7 @@ def sync_words():
         return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/download', methods=['GET', 'OPTIONS'])
-def download_all_words():
+def download_old_endpoint():
     if request.method == 'OPTIONS':
         return '', 200
     
