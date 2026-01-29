@@ -62,6 +62,10 @@
           <span class="material-icons-round">cloud_download</span>
           <span>Backup Data</span>
         </button>
+        <button class="nav-btn" data-action="import" onclick="openModal('import-modal')">
+          <span class="material-icons-round">upload_file</span>
+          <span>Import Excel</span>
+        </button>
         <div class="status-indicator">
           <div class="dot online"></div>
           <span class="status-text">Cloud Active</span>
@@ -257,6 +261,32 @@
           Download Database
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- Import Modal -->
+  <div id="import-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Import Excel</h3>
+        <button class="close-btn" onclick="closeModal('import-modal')">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <form id="import-form">
+        <div class="modal-body">
+          <p>Select an Excel file (.xlsx) to import words.</p>
+          <div class="file-drop-area">
+            <input type="file" name="file" id="excel-file" accept=".xlsx, .xls" required
+              style="border: 2px dashed #ccc; padding: 20px; width: 100%; text-align: center; margin-top: 10px;">
+          </div>
+          <div id="import-status" class="status-message" style="margin-top: 10px;"></div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="secondary-btn" onclick="closeModal('import-modal')">Cancel</button>
+          <button type="submit" class="primary-btn">Import</button>
+        </div>
+      </form>
     </div>
   </div>
 

@@ -273,6 +273,63 @@ def download_all_words():
             })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+@app.route('/api/words/add', methods=['POST', 'OPTIONS'])
+def add_word():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        data = request.json
+        word = data.get('word', '').strip()
+        meaning_bangla = data.get('meaning_bangla', '').strip()
+        meaning_english = data.get('meaning_english', '').strip()
+        
+        if not word:
+            return jsonify({"status": "error", "message": "Word is required"}), 400
+            
+        device_id = data.get('device_id', 'unknown')
+        current_time = datetime.now().isoformat()
+        
+        with get_db_cursor() as (c, conn):
+            # Check if word exists
+            c.execute("SELECT id FROM words WHERE word = ? AND device_id = ? AND is_deleted = 0", (word, device_id))
+            if c.fetchone():
+                return jsonify({"status": "error", "message": "Word already exists"}), 400
+            
+            c.execute('''
+                INSERT INTO words 
+                (word, meaning_bangla, meaning_english, synonyms, example_sentence, 
+                 category, date_added, device_id, last_synced, is_deleted, sync_status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'pending')
+            ''', (
+                word,
+                meaning_bangla,
+                meaning_english,
+                data.get('synonyms', ''),
+                data.get('example_sentence', ''),
+                data.get('category', 'General Vocabulary'),
+                current_time,
+                device_id,
+                current_time
+            ))
+            
+            new_id = c.lastrowid
+            
+            return jsonify({
+                "status": "success",
+                "message": "Word added successfully",
+                "word": {
+                    "id": new_id,
+                    "word": word,
+                    "meaning_bangla": meaning_bangla,
+                    "meaning_english": meaning_english,
+                    "category": data.get('category', 'General Vocabulary')
+                }
+            })
+            
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
 @app.route('/api/test', methods=['GET', 'OPTIONS'])
 def test_connection():
     if request.method == 'OPTIONS':
