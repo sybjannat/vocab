@@ -248,6 +248,10 @@ def after_request(response):
     response.headers.add('Access-Control-Max-Age', '86400')
     return response
 
+@app.route('/')
+def serve_index():
+    return send_file('vocabulary_app.html')
+
 @app.route('/api/test', methods=['GET', 'OPTIONS'])
 def test_connection():
     if request.method == 'OPTIONS':
