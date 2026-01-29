@@ -249,6 +249,30 @@ def after_request(response):
 
 
 
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
+@app.route('/api/download_all', methods=['GET', 'OPTIONS'])
+def download_all_words():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        with get_db_cursor() as (c, conn):
+            c.execute("SELECT * FROM words WHERE is_deleted = 0 ORDER BY date_added DESC")
+            words = []
+            columns = [column[0] for column in c.description]
+            for row in c.fetchall():
+                words.append(dict(zip(columns, row)))
+            
+            return jsonify({
+                "status": "success",
+                "words": words,
+                "count": len(words)
+            })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 @app.route('/api/test', methods=['GET', 'OPTIONS'])
 def test_connection():
     if request.method == 'OPTIONS':
