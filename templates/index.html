@@ -54,10 +54,6 @@
       </div>
 
       <div class="nav-footer">
-        <a href="/legacy" class="nav-btn" style="text-decoration: none;">
-          <span class="material-icons-round">history</span>
-          <span>Legacy Mode</span>
-        </a>
         <button class="nav-btn" data-action="backup">
           <span class="material-icons-round">cloud_download</span>
           <span>Backup Data</span>
@@ -65,6 +61,10 @@
         <button class="nav-btn" data-action="import" onclick="openModal('import-modal')">
           <span class="material-icons-round">upload_file</span>
           <span>Import Excel</span>
+        </button>
+        <button class="nav-btn" onclick="openModal('manage-categories-modal')">
+          <span class="material-icons-round">category</span>
+          <span>Manage Categories</span>
         </button>
         <div class="status-indicator">
           <div class="dot online"></div>
@@ -75,17 +75,16 @@
 
     <!-- Main Content -->
     <main class="main-content">
-
       <!-- Learning Tab -->
       <section id="learning-tab" class="tab-content active">
         <header class="section-header">
           <div>
-            <h2>Ready to learn?</h2>
-            <p class="subtitle">Expand your vocabulary daily.</p>
+            <h2>Welcome to Vocabulary Pro!</h2>
+            <p class="subtitle">Expand your vocabulary daily with smart learning.</p>
           </div>
           <button class="primary-btn" onclick="openModal('add-word-modal')">
             <span class="material-icons-round">add</span>
-            New Word
+            Add New Word
           </button>
         </header>
 
@@ -114,7 +113,16 @@
             </div>
             <div class="stat-info">
               <span class="stat-value" id="quiz-score">0%</span>
-              <span class="stat-label">Avg Quiz Score</span>
+              <span class="stat-label">Quiz Accuracy</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon orange">
+              <span class="material-icons-round">trending_up</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="words-today">0</span>
+              <span class="stat-label">Today's Words</span>
             </div>
           </div>
         </div>
@@ -122,7 +130,6 @@
         <div class="recent-section">
           <h3>Recent Additions</h3>
           <div class="word-grid" id="recent-words-grid">
-            <!-- Populated by JS -->
             <div class="loading-spinner"></div>
           </div>
         </div>
@@ -132,22 +139,33 @@
       <section id="collection-tab" class="tab-content">
         <header class="section-header">
           <div>
-            <h2>Collection</h2>
-            <p class="subtitle">Manage and search your vocabulary.</p>
+            <h2>Vocabulary Collection</h2>
+            <p class="subtitle">Manage and explore your entire vocabulary.</p>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="secondary-btn" onclick="openModal('add-word-modal')">
+              <span class="material-icons-round">add</span>
+              Add Word
+            </button>
+            <button class="secondary-btn" onclick="openModal('manage-categories-modal')">
+              <span class="material-icons-round">category</span>
+              Categories
+            </button>
           </div>
         </header>
 
         <div class="search-bar-container">
           <div class="search-input-wrapper">
             <span class="material-icons-round">search</span>
-            <input type="text" id="search-input" placeholder="Search for words, meanings...">
+            <input type="text" id="search-input" placeholder="Search words, meanings, synonyms...">
           </div>
-          <div class="filter-wrapper">
-            <select id="sort-select" class="custom-select" style="margin-right: 10px;">
+          <div class="filter-wrapper" style="display: flex; gap: 10px;">
+            <select id="sort-select" class="custom-select">
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
-              <option value="az">A-Z</option>
-              <option value="za">Z-A</option>
+              <option value="az">A → Z</option>
+              <option value="za">Z → A</option>
+              <option value="category">By Category</option>
             </select>
             <select id="category-filter" class="custom-select">
               <option value="all">All Categories</option>
@@ -156,7 +174,7 @@
         </div>
 
         <div class="collection-list" id="collection-list">
-          <!-- Populated by JS -->
+          <!-- Populated by JavaScript -->
         </div>
       </section>
 
@@ -167,20 +185,42 @@
             <div class="quiz-hero">
               <span class="material-icons-round large-icon">psychology</span>
               <h2>Quiz Arena</h2>
-              <p>Test your knowledge and track your progress.</p>
+              <p>Test your knowledge and track your progress with interactive quizzes.</p>
+            </div>
+
+            <div class="quiz-overall-stats" style="margin: 30px 0;">
+              <!-- Quiz stats will be loaded here -->
             </div>
 
             <div class="quiz-options">
               <div class="option-card" onclick="startQuiz('mixed', 10)">
                 <span class="material-icons-round">shuffle</span>
                 <h3>Quick Mix</h3>
-                <p>10 random questions</p>
+                <p>10 random questions from all categories</p>
+                <small>Perfect for daily practice</small>
               </div>
-              <div class="option-card" onclick="startQuiz('hard', 20)">
+              <div class="option-card" onclick="startQuiz('hard', 15)">
                 <span class="material-icons-round">bolt</span>
-                <h3>Challenge</h3>
-                <p>20 hard questions</p>
+                <h3>Challenge Mode</h3>
+                <p>15 difficult questions (longer words)</p>
+                <small>Test your advanced vocabulary</small>
               </div>
+              <div class="option-card" onclick="startQuiz('new', 10)">
+                <span class="material-icons-round">fiber_new</span>
+                <h3>New Words</h3>
+                <p>10 questions from recently added words</p>
+                <small>Reinforce your latest additions</small>
+              </div>
+              <div class="option-card" onclick="startQuiz('mixed', 20)">
+                <span class="material-icons-round">timer</span>
+                <h3>Marathon</h3>
+                <p>20 comprehensive questions</p>
+                <small>Full vocabulary assessment</small>
+              </div>
+            </div>
+
+            <div class="quiz-history" style="margin-top: 40px;">
+              <!-- Quiz history will be loaded here -->
             </div>
           </div>
 
@@ -196,23 +236,27 @@
             </div>
 
             <div class="question-card" id="question-card">
-              <!-- Question injected here -->
+              <!-- Question injected by JavaScript -->
             </div>
           </div>
 
           <div class="quiz-results hidden" id="quiz-results">
-            <!-- Results injected here -->
+            <!-- Results injected by JavaScript -->
           </div>
         </div>
       </section>
 
-      <!-- Analytics Tab (Placeholder) -->
+      <!-- Analytics Tab -->
       <section id="analytics-tab" class="tab-content">
         <header class="section-header">
           <div>
-            <h2>Your Progress</h2>
-            <p class="subtitle">Track your vocabulary mastery.</p>
+            <h2>Learning Analytics</h2>
+            <p class="subtitle">Track your vocabulary growth and performance.</p>
           </div>
+          <button class="secondary-btn" onclick="refreshAnalytics()">
+            <span class="material-icons-round">refresh</span>
+            Refresh
+          </button>
         </header>
 
         <div class="analytics-grid">
@@ -227,7 +271,21 @@
             <h3>Quiz Performance</h3>
             <div class="big-stat">
               <span id="analytics-accuracy">0%</span>
-              <label>Avg. Accuracy</label>
+              <label>Average Accuracy</label>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <h3>Learning Streak</h3>
+            <div class="big-stat">
+              <span id="analytics-streak">0</span>
+              <label>Active Days</label>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <h3>Mastery Level</h3>
+            <div class="big-stat">
+              <span id="analytics-mastery">0%</span>
+              <label>Words Mastered</label>
             </div>
           </div>
         </div>
@@ -235,15 +293,22 @@
         <div class="analytics-card full-width">
           <h3>Category Breakdown</h3>
           <div class="category-bars" id="analytics-category-bars">
-            <!-- Bars injected here -->
+            <!-- Bars will be loaded here -->
+          </div>
+        </div>
+
+        <div class="analytics-card full-width">
+          <h3>Advanced Analytics</h3>
+          <div id="advanced-analytics">
+            <!-- Advanced analytics will be loaded here -->
           </div>
         </div>
       </section>
-
     </main>
   </div>
 
   <!-- Modals -->
+  <!-- Add Word Modal -->
   <div id="add-word-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -255,7 +320,7 @@
       <form id="add-word-form">
         <div class="form-group">
           <label>Word <span class="required">*</span></label>
-          <input type="text" name="word" required placeholder="e.g. Ephemeral">
+          <input type="text" name="word" required placeholder="e.g. Ephemeral" maxlength="100">
         </div>
         <div class="form-group">
           <label>Category <span class="required">*</span></label>
@@ -271,20 +336,22 @@
         </div>
         <div class="form-group">
           <label>Bangla Meaning <span class="required">*</span></label>
-          <input type="text" name="meaning_bangla" required placeholder="e.g. ক্ষণস্থায়ী">
+          <input type="text" name="meaning_bangla" required placeholder="e.g. ক্ষণস্থায়ী" maxlength="200">
         </div>
         <div class="form-group">
           <label>English Meaning <span class="required">*</span></label>
-          <input type="text" name="meaning_english" required placeholder="e.g. Lasting for a very short time">
+          <input type="text" name="meaning_english" required placeholder="e.g. Lasting for a very short time"
+            maxlength="200">
         </div>
         <div class="form-group">
           <label>Synonyms <span class="required">*</span></label>
-          <input type="text" name="synonyms" required placeholder="e.g. Transient, Fleeting">
+          <input type="text" name="synonyms" required placeholder="e.g. Transient, Fleeting, Temporary" maxlength="200">
         </div>
         <div class="form-group">
           <label>Example Sentence <span class="required">*</span></label>
           <textarea name="example_sentence" required
-            placeholder="e.g. Fashions are ephemeral, changing with every season."></textarea>
+            placeholder="e.g. The beauty of cherry blossoms is ephemeral, lasting only a week or two."
+            maxlength="500"></textarea>
         </div>
         <div class="modal-footer">
           <button type="button" class="secondary-btn" onclick="closeModal('add-word-modal')">Cancel</button>
@@ -292,7 +359,6 @@
         </div>
       </form>
     </div>
-  </div>
   </div>
 
   <!-- Edit Word Modal -->
@@ -313,7 +379,7 @@
         <div class="form-group">
           <label>Category <span class="required">*</span></label>
           <select name="category" id="edit-word-category" required>
-            <!-- Populated by JS -->
+            <!-- Populated by JavaScript -->
           </select>
         </div>
         <div class="form-group">
@@ -351,32 +417,35 @@
       </div>
       <div class="modal-body">
         <form id="add-category-form" class="inline-form">
-          <input type="text" name="name" placeholder="New Category Name" required>
+          <input type="text" name="name" placeholder="New Category Name" required maxlength="50">
           <button type="submit" class="primary-btn small">Add</button>
         </form>
         <div class="category-list" id="manage-category-list">
-          <!-- Populated by JS -->
+          <!-- Populated by JavaScript -->
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Backup Warning Modal (Vercel specific) -->
+  <!-- Backup Modal -->
   <div id="backup-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header warning">
         <span class="material-icons-round">warning</span>
-        <h3>Data Persistence Warning</h3>
+        <h3>Data Backup</h3>
       </div>
       <div class="modal-body">
-        <p>You are running on a cloud environment. <strong>Data will be lost</strong> if the server restarts.</p>
-        <p>Please download your backup regularly.</p>
+        <p>Regularly backup your vocabulary data to prevent data loss.</p>
+        <p style="color: var(--warning); font-weight: 500;">
+          <span class="material-icons-round" style="vertical-align: middle;">info</span>
+          Your data will be downloaded as an Excel file.
+        </p>
       </div>
       <div class="modal-footer">
         <button class="secondary-btn" onclick="closeModal('backup-modal')">Close</button>
         <button class="primary-btn" onclick="downloadBackup()">
           <span class="material-icons-round">download</span>
-          Download Database
+          Download Backup
         </button>
       </div>
     </div>
@@ -386,23 +455,31 @@
   <div id="import-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Import Excel</h3>
+        <h3>Import Excel File</h3>
         <button class="close-btn" onclick="closeModal('import-modal')">
           <span class="material-icons-round">close</span>
         </button>
       </div>
       <form id="import-form">
         <div class="modal-body">
-          <p>Select an Excel file (.xlsx) to import words.</p>
+          <p>Upload an Excel file (.xlsx) to import words. The file should have these columns:</p>
+          <ul style="margin: 10px 0 15px 20px; color: var(--text-muted); font-size: 14px;">
+            <li>Word</li>
+            <li>Meaning Bangla</li>
+            <li>Meaning English</li>
+            <li>Synonyms</li>
+            <li>Example Sentence</li>
+            <li>Category (optional)</li>
+          </ul>
           <div class="file-drop-area">
             <input type="file" name="file" id="excel-file" accept=".xlsx, .xls" required
               style="border: 2px dashed #ccc; padding: 20px; width: 100%; text-align: center; margin-top: 10px;">
           </div>
-          <div id="import-status" class="status-message" style="margin-top: 10px;"></div>
+          <div id="import-status" class="status-message" style="margin-top: 10px; font-size: 14px;"></div>
         </div>
         <div class="modal-footer">
           <button type="button" class="secondary-btn" onclick="closeModal('import-modal')">Cancel</button>
-          <button type="submit" class="primary-btn">Import</button>
+          <button type="submit" class="primary-btn">Import File</button>
         </div>
       </form>
     </div>
