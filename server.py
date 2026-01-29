@@ -283,9 +283,13 @@ def add_word():
         word = data.get('word', '').strip()
         meaning_bangla = data.get('meaning_bangla', '').strip()
         meaning_english = data.get('meaning_english', '').strip()
+        synonyms = data.get('synonyms', '').strip()
+        example_sentence = data.get('example_sentence', '').strip()
+        category = data.get('category', '').strip()
         
-        if not word:
-            return jsonify({"status": "error", "message": "Word is required"}), 400
+        # Mandatory field validation
+        if not all([word, meaning_bangla, meaning_english, synonyms, example_sentence]):
+            return jsonify({"status": "error", "message": "All fields (Word, Bangla, English, Synonyms, Example) are required"}), 400
             
         device_id = data.get('device_id', 'unknown')
         current_time = datetime.now().isoformat()
@@ -305,9 +309,9 @@ def add_word():
                 word,
                 meaning_bangla,
                 meaning_english,
-                data.get('synonyms', ''),
-                data.get('example_sentence', ''),
-                data.get('category', 'General Vocabulary'),
+                synonyms,
+                example_sentence,
+                category or 'General Vocabulary',
                 current_time,
                 device_id,
                 current_time
@@ -323,10 +327,61 @@ def add_word():
                     "word": word,
                     "meaning_bangla": meaning_bangla,
                     "meaning_english": meaning_english,
-                    "category": data.get('category', 'General Vocabulary')
+                    "category": category or 'General Vocabulary'
                 }
             })
             
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/words/edit', methods=['POST', 'OPTIONS'])
+def edit_word():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        data = request.json
+        word_id = data.get('id')
+        
+        if not word_id:
+            return jsonify({"status": "error", "message": "Word ID is required"}), 400
+
+        with get_db_cursor() as (c, conn):
+            c.execute('''
+                UPDATE words
+                SET word = ?, meaning_bangla = ?, meaning_english = ?, synonyms = ?, 
+                    example_sentence = ?, category = ?, is_edited = 1, last_synced = ?
+                WHERE id = ?
+            ''', (
+                data.get('word'),
+                data.get('meaning_bangla'),
+                data.get('meaning_english'),
+                data.get('synonyms'),
+                data.get('example_sentence'),
+                data.get('category'),
+                datetime.now().isoformat(),
+                word_id
+            ))
+            return jsonify({"status": "success", "message": "Word updated successfully"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/api/words/delete', methods=['POST', 'OPTIONS'])
+def delete_word():
+    if request.method == 'OPTIONS':
+        return '', 200
+    
+    try:
+        data = request.json
+        word_id = data.get('id')
+        
+        if not word_id:
+            return jsonify({"status": "error", "message": "Word ID is required"}), 400
+
+        with get_db_cursor() as (c, conn):
+            c.execute('UPDATE words SET is_deleted = 1, last_synced = ? WHERE id = ?', 
+                     (datetime.now().isoformat(), word_id))
+            return jsonify({"status": "success", "message": "Word deleted successfully"})
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
 
@@ -376,6 +431,42 @@ def get_status():
             
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)})
+
+@app.route('/api/analytics', methods=['GET', 'OPTIONS'])
+def get_analytics():
+    if request.method == 'OPTIONS':
+        return '', 200
+        
+    try:
+        with get_db_cursor() as (c, conn):
+            # Total Words
+            c.execute("SELECT COUNT(*) FROM words WHERE is_deleted = 0")
+            total_words = c.fetchone()[0]
+            
+            # Words per Category
+            c.execute('''
+                SELECT category, COUNT(*) as count 
+                FROM words 
+                WHERE is_deleted = 0 
+                GROUP BY category
+            ''')
+            category_stats = [{"name": row[0], "count": row[1]} for row in c.fetchall()]
+            
+            # Quiz Stats (Mock for now or real if available)
+            # Try/Except in case table empty or error
+            try:
+                c.execute("SELECT AVG(accuracy) FROM quiz_results")
+                avg_accuracy = c.fetchone()[0] or 0
+            except:
+                avg_accuracy = 0
+            
+            return jsonify({
+                "total_words": total_words,
+                "category_breakdown": category_stats,
+                "avg_accuracy": round(avg_accuracy, 1)
+            })
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/categories', methods=['GET', 'OPTIONS'])
 def get_categories():
@@ -440,6 +531,29 @@ def add_category():
 
 
 
+
+@app.route('/api/categories/edit', methods=['POST', 'OPTIONS'])
+def edit_category():
+    if request.method == 'OPTIONS':
+        return '', 200
+        
+    try:
+        data = request.json
+        old_name = data.get('old_name')
+        new_name = data.get('new_name')
+        
+        if not old_name or not new_name:
+            return jsonify({"status": "error", "message": "Both old and new names requested"}), 400
+
+        with get_db_cursor() as (c, conn):
+            # Update category name
+            c.execute("UPDATE categories SET name = ? WHERE name = ?", (new_name, old_name))
+            # Update associated words
+            c.execute("UPDATE words SET category = ? WHERE category = ?", (new_name, old_name))
+            
+            return jsonify({"status": "success", "message": "Category updated"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": str(e)}), 500
 
 @app.route('/api/categories/delete', methods=['POST', 'OPTIONS'])
 def delete_category():

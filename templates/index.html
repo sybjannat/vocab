@@ -143,6 +143,12 @@
             <input type="text" id="search-input" placeholder="Search for words, meanings...">
           </div>
           <div class="filter-wrapper">
+            <select id="sort-select" class="custom-select" style="margin-right: 10px;">
+              <option value="newest">Newest First</option>
+              <option value="oldest">Oldest First</option>
+              <option value="az">A-Z</option>
+              <option value="za">Z-A</option>
+            </select>
             <select id="category-filter" class="custom-select">
               <option value="all">All Categories</option>
             </select>
@@ -202,10 +208,35 @@
 
       <!-- Analytics Tab (Placeholder) -->
       <section id="analytics-tab" class="tab-content">
-        <div class="empty-state">
-          <span class="material-icons-round">insights</span>
-          <h3>Analytics Coming Soon</h3>
-          <p>Detailed progress tracking is under construction.</p>
+        <header class="section-header">
+          <div>
+            <h2>Your Progress</h2>
+            <p class="subtitle">Track your vocabulary mastery.</p>
+          </div>
+        </header>
+
+        <div class="analytics-grid">
+          <div class="analytics-card">
+            <h3>Vocabulary Growth</h3>
+            <div class="big-stat">
+              <span id="analytics-total-words">0</span>
+              <label>Words Learned</label>
+            </div>
+          </div>
+          <div class="analytics-card">
+            <h3>Quiz Performance</h3>
+            <div class="big-stat">
+              <span id="analytics-accuracy">0%</span>
+              <label>Avg. Accuracy</label>
+            </div>
+          </div>
+        </div>
+
+        <div class="analytics-card full-width">
+          <h3>Category Breakdown</h3>
+          <div class="category-bars" id="analytics-category-bars">
+            <!-- Bars injected here -->
+          </div>
         </div>
       </section>
 
@@ -223,23 +254,110 @@
       </div>
       <form id="add-word-form">
         <div class="form-group">
-          <label>Word</label>
+          <label>Word <span class="required">*</span></label>
           <input type="text" name="word" required placeholder="e.g. Ephemeral">
         </div>
         <div class="form-group">
-          <label>Bangla Meaning</label>
-          <input type="text" name="meaning_bangla" placeholder="e.g. ক্ষণস্থায়ী">
+          <label>Category <span class="required">*</span></label>
+          <div class="category-input-group">
+            <select name="category" id="add-word-category" required>
+              <option value="General Vocabulary">General Vocabulary</option>
+            </select>
+            <button type="button" class="icon-btn" onclick="openModal('manage-categories-modal')"
+              title="Manage Categories">
+              <span class="material-icons-round">settings</span>
+            </button>
+          </div>
         </div>
         <div class="form-group">
-          <label>English Meaning</label>
-          <input type="text" name="meaning_english" placeholder="e.g. Lasting for a very short time">
+          <label>Bangla Meaning <span class="required">*</span></label>
+          <input type="text" name="meaning_bangla" required placeholder="e.g. ক্ষণস্থায়ী">
         </div>
-        <!-- More fields... -->
+        <div class="form-group">
+          <label>English Meaning <span class="required">*</span></label>
+          <input type="text" name="meaning_english" required placeholder="e.g. Lasting for a very short time">
+        </div>
+        <div class="form-group">
+          <label>Synonyms <span class="required">*</span></label>
+          <input type="text" name="synonyms" required placeholder="e.g. Transient, Fleeting">
+        </div>
+        <div class="form-group">
+          <label>Example Sentence <span class="required">*</span></label>
+          <textarea name="example_sentence" required
+            placeholder="e.g. Fashions are ephemeral, changing with every season."></textarea>
+        </div>
         <div class="modal-footer">
           <button type="button" class="secondary-btn" onclick="closeModal('add-word-modal')">Cancel</button>
           <button type="submit" class="primary-btn">Save Word</button>
         </div>
       </form>
+    </div>
+  </div>
+  </div>
+
+  <!-- Edit Word Modal -->
+  <div id="edit-word-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Edit Word</h3>
+        <button class="close-btn" onclick="closeModal('edit-word-modal')">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <form id="edit-word-form">
+        <input type="hidden" name="id">
+        <div class="form-group">
+          <label>Word <span class="required">*</span></label>
+          <input type="text" name="word" required>
+        </div>
+        <div class="form-group">
+          <label>Category <span class="required">*</span></label>
+          <select name="category" id="edit-word-category" required>
+            <!-- Populated by JS -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Bangla Meaning <span class="required">*</span></label>
+          <input type="text" name="meaning_bangla" required>
+        </div>
+        <div class="form-group">
+          <label>English Meaning <span class="required">*</span></label>
+          <input type="text" name="meaning_english" required>
+        </div>
+        <div class="form-group">
+          <label>Synonyms <span class="required">*</span></label>
+          <input type="text" name="synonyms" required>
+        </div>
+        <div class="form-group">
+          <label>Example Sentence <span class="required">*</span></label>
+          <textarea name="example_sentence" required></textarea>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="secondary-btn" onclick="closeModal('edit-word-modal')">Cancel</button>
+          <button type="submit" class="primary-btn">Update Word</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Manage Categories Modal -->
+  <div id="manage-categories-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Manage Categories</h3>
+        <button class="close-btn" onclick="closeModal('manage-categories-modal')">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="add-category-form" class="inline-form">
+          <input type="text" name="name" placeholder="New Category Name" required>
+          <button type="submit" class="primary-btn small">Add</button>
+        </form>
+        <div class="category-list" id="manage-category-list">
+          <!-- Populated by JS -->
+        </div>
+      </div>
     </div>
   </div>
 
