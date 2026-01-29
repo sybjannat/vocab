@@ -1,9 +1,8 @@
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template
 from flask_cors import CORS
 import pandas as pd
 import sqlite3
 from datetime import datetime
-import socket
 import os
 import json
 import uuid
@@ -14,6 +13,15 @@ from contextlib import contextmanager
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*", "allow_headers": "*", "methods": "*"}})
+
+# Modern Config
+@app.route('/')
+def serve_index():
+    return render_template('index.html')
+
+@app.route('/legacy')
+def serve_legacy():
+    return send_file('vocabulary_app.html')
 
 DB_FILE = 'vocabulary.db'
 EXCEL_FILE = 'vocabulary_all.xlsx'
@@ -71,15 +79,6 @@ def get_db_cursor():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-def get_ip_address():
-    try:
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        ip_address = s.getsockname()[0]
-        s.close()
-        return ip_address
-    except:
-        return "127.0.0.1"
     
 
 
@@ -261,7 +260,7 @@ def test_connection():
         "status": "success",
         "message": "Vocabulary Pro Server is running!",
         "timestamp": datetime.now().isoformat(),
-        "server_ip": get_ip_address(),
+        "timestamp": datetime.now().isoformat(),
         "version": "4.3",
         "database": "thread-safe"
     })
@@ -1974,21 +1973,9 @@ def get_devices():
 
 if __name__ == '__main__':
     init_db()
-    ip_address = get_ip_address()
     
     print("\n" + "="*70)
-    print("📚 VOCABULARY PRO SERVER - THREAD-SAFE v4.3")
-    print("="*70)
-    print(f"🏠 Local Access:    http://localhost:8000")
-    print(f"📱 Mobile Access:   http://{ip_address}:8000")
-    print(f"🌐 App URL:         http://{ip_address}:8000/app-full")
-    print("="*70)
-    print("\n✨ Key Improvements:")
-    print("• Thread-safe database connections")
-    print("• WAL journal mode for better concurrency")
-    print("• Batch processing for large imports")
-    print("• Automatic retry on database lock")
-    print("• Context managers for reliable connections")
+    print("📚 VOCABULARY PRO SERVER - CLOUD READY v5.0")
     print("="*70)
     
     # Set threading options
@@ -1999,6 +1986,5 @@ if __name__ == '__main__':
     app.run(
         host='0.0.0.0',
         port=8000,
-        debug=False,
-        threaded=True
+        debug=True
     )

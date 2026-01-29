@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#6366f1">
+  <title>Vocabulary Pro</title>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+  <div class="background-blobs">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+  </div>
+
+  <div class="app-wrapper">
+    <!-- Sidebar / Mobile Menu -->
+    <nav class="sidebar">
+      <div class="logo">
+        <span class="material-icons-round">auto_stories</span>
+        <h1>Vocab<span>Pro</span></h1>
+      </div>
+
+      <div class="nav-links">
+        <button class="nav-btn active" data-tab="learning">
+          <span class="material-icons-round">dashboard</span>
+          <span>Learning</span>
+        </button>
+        <button class="nav-btn" data-tab="collection">
+          <span class="material-icons-round">style</span>
+          <span>Collection</span>
+        </button>
+        <button class="nav-btn" data-tab="quiz">
+          <span class="material-icons-round">sports_esports</span>
+          <span>Quiz Arena</span>
+        </button>
+        <button class="nav-btn" data-tab="analytics">
+          <span class="material-icons-round">analytics</span>
+          <span>Analytics</span>
+        </button>
+      </div>
+
+      <div class="nav-footer">
+        <a href="/legacy" class="nav-btn" style="text-decoration: none;">
+          <span class="material-icons-round">history</span>
+          <span>Legacy Mode</span>
+        </a>
+        <button class="nav-btn" data-action="backup">
+          <span class="material-icons-round">cloud_download</span>
+          <span>Backup Data</span>
+        </button>
+        <div class="status-indicator">
+          <div class="dot online"></div>
+          <span class="status-text">Cloud Active</span>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+
+      <!-- Learning Tab -->
+      <section id="learning-tab" class="tab-content active">
+        <header class="section-header">
+          <div>
+            <h2>Ready to learn?</h2>
+            <p class="subtitle">Expand your vocabulary daily.</p>
+          </div>
+          <button class="primary-btn" onclick="openModal('add-word-modal')">
+            <span class="material-icons-round">add</span>
+            New Word
+          </button>
+        </header>
+
+        <div class="stats-overview">
+          <div class="stat-card">
+            <div class="stat-icon purple">
+              <span class="material-icons-round">school</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="total-words">0</span>
+              <span class="stat-label">Total Words</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue">
+              <span class="material-icons-round">category</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="total-categories">0</span>
+              <span class="stat-label">Categories</span>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">
+              <span class="material-icons-round">emoji_events</span>
+            </div>
+            <div class="stat-info">
+              <span class="stat-value" id="quiz-score">0%</span>
+              <span class="stat-label">Avg Quiz Score</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="recent-section">
+          <h3>Recent Additions</h3>
+          <div class="word-grid" id="recent-words-grid">
+            <!-- Populated by JS -->
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Collection Tab -->
+      <section id="collection-tab" class="tab-content">
+        <header class="section-header">
+          <div>
+            <h2>Collection</h2>
+            <p class="subtitle">Manage and search your vocabulary.</p>
+          </div>
+        </header>
+
+        <div class="search-bar-container">
+          <div class="search-input-wrapper">
+            <span class="material-icons-round">search</span>
+            <input type="text" id="search-input" placeholder="Search for words, meanings...">
+          </div>
+          <div class="filter-wrapper">
+            <select id="category-filter" class="custom-select">
+              <option value="all">All Categories</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="collection-list" id="collection-list">
+          <!-- Populated by JS -->
+        </div>
+      </section>
+
+      <!-- Quiz Tab -->
+      <section id="quiz-tab" class="tab-content">
+        <div class="quiz-container">
+          <div class="quiz-welcome" id="quiz-welcome">
+            <div class="quiz-hero">
+              <span class="material-icons-round large-icon">psychology</span>
+              <h2>Quiz Arena</h2>
+              <p>Test your knowledge and track your progress.</p>
+            </div>
+
+            <div class="quiz-options">
+              <div class="option-card" onclick="startQuiz('mixed', 10)">
+                <span class="material-icons-round">shuffle</span>
+                <h3>Quick Mix</h3>
+                <p>10 random questions</p>
+              </div>
+              <div class="option-card" onclick="startQuiz('hard', 20)">
+                <span class="material-icons-round">bolt</span>
+                <h3>Challenge</h3>
+                <p>20 hard questions</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="quiz-active hidden" id="quiz-active">
+            <div class="quiz-header">
+              <div class="progress-bar">
+                <div class="progress-fill" id="quiz-progress" style="width: 0%"></div>
+              </div>
+              <div class="quiz-meta">
+                <span id="question-counter">1/10</span>
+                <span id="quiz-timer">00:00</span>
+              </div>
+            </div>
+
+            <div class="question-card" id="question-card">
+              <!-- Question injected here -->
+            </div>
+          </div>
+
+          <div class="quiz-results hidden" id="quiz-results">
+            <!-- Results injected here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Analytics Tab (Placeholder) -->
+      <section id="analytics-tab" class="tab-content">
+        <div class="empty-state">
+          <span class="material-icons-round">insights</span>
+          <h3>Analytics Coming Soon</h3>
+          <p>Detailed progress tracking is under construction.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Modals -->
+  <div id="add-word-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Add New Word</h3>
+        <button class="close-btn" onclick="closeModal('add-word-modal')">
+          <span class="material-icons-round">close</span>
+        </button>
+      </div>
+      <form id="add-word-form">
+        <div class="form-group">
+          <label>Word</label>
+          <input type="text" name="word" required placeholder="e.g. Ephemeral">
+        </div>
+        <div class="form-group">
+          <label>Bangla Meaning</label>
+          <input type="text" name="meaning_bangla" placeholder="e.g. ক্ষণস্থায়ী">
+        </div>
+        <div class="form-group">
+          <label>English Meaning</label>
+          <input type="text" name="meaning_english" placeholder="e.g. Lasting for a very short time">
+        </div>
+        <!-- More fields... -->
+        <div class="modal-footer">
+          <button type="button" class="secondary-btn" onclick="closeModal('add-word-modal')">Cancel</button>
+          <button type="submit" class="primary-btn">Save Word</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Backup Warning Modal (Vercel specific) -->
+  <div id="backup-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header warning">
+        <span class="material-icons-round">warning</span>
+        <h3>Data Persistence Warning</h3>
+      </div>
+      <div class="modal-body">
+        <p>You are running on a cloud environment. <strong>Data will be lost</strong> if the server restarts.</p>
+        <p>Please download your backup regularly.</p>
+      </div>
+      <div class="modal-footer">
+        <button class="secondary-btn" onclick="closeModal('backup-modal')">Close</button>
+        <button class="primary-btn" onclick="downloadBackup()">
+          <span class="material-icons-round">download</span>
+          Download Database
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+
+</html>
