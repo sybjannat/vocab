@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Connection Test</title>
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    .result {
+      padding: 20px;
+      margin: 10px 0;
+      border-radius: 10px;
+    }
+
+    .success {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    button {
+      padding: 15px;
+      margin: 10px;
+      font-size: 16px;
+    }
+
+    input {
+      padding: 10px;
+      width: 80%;
+      margin: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>Vocabulary Server Test</h1>
+
+  <input type="text" id="serverUrl" placeholder="http://192.168.0.104:8000">
+  <button onclick="testConnection()">Test Connection</button>
+
+  <div id="result"></div>
+
+  <h3>Common IPs to try:</h3>
+  <button onclick="testIP('192.168.0.104')">192.168.0.104</button>
+  <button onclick="testIP('192.168.1.100')">192.168.1.100</button>
+  <button onclick="testIP('192.168.0.100')">192.168.0.100</button>
+  <button onclick="testIP('192.168.1.101')">192.168.1.101</button>
+
+  <script>
+    async function testConnection() {
+      const url = document.getElementById('serverUrl').value;
+      await testURL(url);
+    }
+
+    async function testIP(ip) {
+      const url = `http://${ip}:8000`;
+      document.getElementById('serverUrl').value = url;
+      await testURL(url);
+    }
+
+    async function testURL(url) {
+      const result = document.getElementById('result');
+      result.innerHTML = 'Testing...';
+      result.className = 'result';
+
+      try {
+        const response = await fetch(`${url}/api/status`, {
+          timeout: 5000
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          result.innerHTML = `
+                        ✅ SUCCESS! Server is connected.<br>
+                        Status: ${data.status}<br>
+                        Total Words: ${data.total_words}<br>
+                        Devices: ${data.device_count}<br>
+                        Your IP: ${data.client_ip || 'Unknown'}
+                    `;
+          result.className = 'result success';
+
+          // Save working URL
+          localStorage.setItem('working_server_url', url);
+          alert(`✅ Server found! Use this URL: ${url}`);
+        } else {
+          result.innerHTML = '❌ Server error (wrong port or server not running)';
+          result.className = 'result error';
+        }
+      } catch (error) {
+        result.innerHTML = `
+                    ❌ CONNECTION FAILED<br>
+                    Error: ${error.message}<br><br>
+                    Possible issues:<br>
+                    1. Wrong IP address<br>
+                    2. Server not running<br>
+                    3. Firewall blocking port 8000<br>
+                    4. Different WiFi networks
+                `;
+        result.className = 'result error';
+      }
+    }
+
+    // Auto-test on load
+    window.onload = async () => {
+      const savedUrl = localStorage.getItem('working_server_url');
+      if (savedUrl) {
+        document.getElementById('serverUrl').value = savedUrl;
+        await testURL(savedUrl);
+      }
+    };
+  </script>
+</body>
+
+</html>

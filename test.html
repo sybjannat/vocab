@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Server Connection Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #4f46e5;
+    }
+
+    .card {
+      background: #f3f4f6;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 15px 0;
+    }
+
+    .btn {
+      background: #4f46e5;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin: 5px;
+    }
+
+    .success {
+      color: green;
+      font-weight: bold;
+    }
+
+    .error {
+      color: red;
+      font-weight: bold;
+    }
+
+    .results {
+      margin-top: 20px;
+    }
+
+    pre {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      overflow: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <h1>🔍 Server Connection Diagnostic</h1>
+
+  <div class="card">
+    <h3>1. Test Direct Connection</h3>
+    <input type="text" id="serverUrl" value="http://192.168.0.104:8000" style="width: 300px; padding: 10px;">
+    <button class="btn" onclick="testDirect()">Test Connection</button>
+  </div>
+
+  <div class="card">
+    <h3>2. Auto-Detect Server</h3>
+    <button class="btn" onclick="autoDetect()">Auto Detect Server</button>
+    <p id="autoResult"></p>
+  </div>
+
+  <div class="card">
+    <h3>3. Network Information</h3>
+    <button class="btn" onclick="showNetworkInfo()">Show Network Info</button>
+    <div id="networkInfo"></div>
+  </div>
+
+  <div class="card">
+    <h3>4. Common Fixes</h3>
+    <p>If connection fails, try these:</p>
+    <ol>
+      <li><strong>Check Windows Firewall:</strong><br>
+        <code>netsh advfirewall firewall add rule name="Vocabulary" dir=in action=allow protocol=TCP localport=8000</code>
+      </li>
+      <li><strong>Check if both devices are on same WiFi</strong></li>
+      <li><strong>Try laptop's hotspot</strong></li>
+      <li><strong>Use ngrok for public URL</strong></li>
+    </ol>
+  </div>
+
+  <div class="results" id="results"></div>
+
+  <script>
+    function testDirect() {
+      const url = document.getElementById('serverUrl').value;
+      const results = document.getElementById('results');
+      results.innerHTML = `<p>Testing: ${url}...</p>`;
+
+      fetch(url + '/api/test')
+        .then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error(`HTTP ${response.status}`);
+        })
+        .then(data => {
+          results.innerHTML = `
+                        <div class="success">✅ CONNECTION SUCCESSFUL!</div>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                        <p><strong>Server:</strong> ${data.message}</p>
+                        <p><strong>Your IP:</strong> ${data.client_ip}</p>
+                        <p><strong>Server Time:</strong> ${data.timestamp}</p>
+                    `;
+        })
+        .catch(error => {
+          results.innerHTML = `
+                        <div class="error">❌ CONNECTION FAILED</div>
+                        <p>Error: ${error.message}</p>
+                        <p><strong>Troubleshooting:</strong></p>
+                        <ul>
+                            <li>Is server running? Check laptop terminal</li>
+                            <li>Is laptop IP correct? Current IP: ${url}</li>
+                            <li>Check Windows Firewall settings</li>
+                            <li>Try different IP addresses below</li>
+                        </ul>
+                    `;
+        });
+    }
+
+    function autoDetect() {
+      const autoResult = document.getElementById('autoResult');
+      autoResult.innerHTML = "Scanning for server...";
+
+      const testIPs = [
+        '192.168.0.104',    // Your current
+        '192.168.1.100',
+        '192.168.0.1',
+        '192.168.1.1',
+        '10.0.0.2'
+      ];
+
+      let found = false;
+
+      testIPs.forEach(ip => {
+        const testUrl = `http://${ip}:8000/api/test`;
+        fetch(testUrl, { timeout: 3000 })
+          .then(response => {
+            if (response.ok && !found) {
+              found = true;
+              autoResult.innerHTML = `<span class="success">✅ Found server at: ${ip}</span>`;
+              document.getElementById('serverUrl').value = `http://${ip}:8000`;
+            }
+          })
+          .catch(() => {
+            // Ignore failed attempts
+          });
+      });
+
+      setTimeout(() => {
+        if (!found) {
+          autoResult.innerHTML = `<span class="error">❌ No server found</span>`;
+        }
+      }, 5000);
+    }
+
+    function showNetworkInfo() {
+      const networkInfo = document.getElementById('networkInfo');
+      networkInfo.innerHTML = `
+                <p><strong>Your IP:</strong> ${window.location.hostname}</p>
+                <p><strong>User Agent:</strong> ${navigator.userAgent}</p>
+                <p><strong>Online Status:</strong> ${navigator.onLine ? 'Online' : 'Offline'}</p>
+                <p><strong>Test URLs to try:</strong></p>
+                <ul>
+                    <li><a href="http://192.168.0.104:8000/api/test" target="_blank">http://192.168.0.104:8000/api/test</a></li>
+                    <li><a href="http://localhost:8000/api/test" target="_blank">http://localhost:8000/api/test</a> (for laptop only)</li>
+                </ul>
+            `;
+    }
+  </script>
+</body>
+
+</html>
